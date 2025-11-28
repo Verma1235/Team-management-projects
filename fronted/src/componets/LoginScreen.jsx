@@ -1,4 +1,34 @@
-function LoginScreen({screenSwitch,CompanyName}) {
+import {useState,useEffect} from "react";
+
+
+
+function LoginScreen({screenSwitch,CompanyName,createLogin,showToast}) {
+
+
+
+const [loginform,setloginform]=useState({email:"",password:""});
+
+function formhandeler(e){
+
+    setloginform((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+}
+
+async function loginStart(e){
+    const {email,password}=loginform;
+
+    if(!email || !password){
+      return showToast("All fields are required",'w');
+    }
+    
+    await createLogin(loginform);
+     
+
+}
+
+
   return (
     <>
       {/* <!-- Mobile Card Container --> */}
@@ -41,13 +71,16 @@ function LoginScreen({screenSwitch,CompanyName}) {
           </h2>
 
           {/* <!-- Form --> */}
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={(e)=>{e.preventDefault()}}>
             {/* <!-- Username Field --> */}
             <div className="relative">
               <input
-                type="text"
+                type="email"
                 id="username"
+                name="email"
                 placeholder="Username"
+                onChange={formhandeler}
+                value={loginform.email}
                 className="w-full px-4 py-4 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 shadow-sm"
                 required
               />
@@ -59,6 +92,9 @@ function LoginScreen({screenSwitch,CompanyName}) {
                 type="password"
                 id="password"
                 placeholder="Password"
+                value={loginform.password}
+                name="password"
+                onChange={formhandeler}
                 className="w-full px-4 py-4 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 shadow-sm pr-12"
                 required
               />
@@ -67,7 +103,7 @@ function LoginScreen({screenSwitch,CompanyName}) {
                 className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400"
               >
                 {/* <!-- Eye Icon --> */}
-                <svg
+                {/* <svg
                   className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
@@ -86,7 +122,7 @@ function LoginScreen({screenSwitch,CompanyName}) {
                     stroke-width="2"
                     d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                   ></path>
-                </svg>
+                </svg> */}
               </button>
             </div>
 
@@ -115,6 +151,7 @@ function LoginScreen({screenSwitch,CompanyName}) {
               type="submit"
               className="w-full py-4 text-white font-semibold rounded-2xl shadow-lg transition duration-300 hover:shadow-xl
                                 bg-gradient-to-r from-indigo-600 to-purple-600 mt-6"
+              onClick={loginStart}                  
             >
               Login
             </button>

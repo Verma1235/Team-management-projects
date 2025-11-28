@@ -3,6 +3,7 @@ import "./App.css";
 import { HomeScreen } from "./componets/HomeScreen";
 import { LoginScreen } from "./componets/LoginScreen";
 import { SignupScreen } from "./componets/SignupScreen";
+import Dashboard from "./componets/dashboard/dashboard";
 
 function App() {
   // _______________________ use state manage ______________________________
@@ -27,7 +28,11 @@ function App() {
         setState({ [key]: 0 });
       }
     });
-    setState({ [current]: 1 });
+    if(current=='0'){
+    }else{
+       setState({ [current]: 1 });
+    }
+  
   }
 
   // Toast handller function
@@ -113,9 +118,8 @@ function App() {
               // move to login screen
               screenSwitch("LoginScreen");
             }
-            if(data.status == 500){
-              showToast("This account already registered !!",'d');
-              
+            if (data.status == 500) {
+              showToast("This account already registered !!", "d");
             }
           })
           .catch((err) => console.error("Error:", err));
@@ -130,8 +134,85 @@ function App() {
     setsignup({ name, email, password });
   }
 
+  // login state +effect +api  manage
+  const [logindata, setlogindata] = useState({ email: "", password: "" });
+
+  useEffect(() => {
+    const { email, password } = logindata;
+    if (!email || !password) {
+    } else {
+      try {
+        fetch("http://localhost:3000/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(logindata),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("Response:", data);
+            if (data.status == 401) {
+              showToast(`${data.message}`, "d");
+            }
+            if (data.status == 200) {
+              showToast("Login successfully proceesed !!", "s");
+              localStorage.setItem("Token", JSON.stringify(data.token));
+              screenSwitch("0");
+
+            }
+          })
+          .catch((err) => {
+            showToast(`Error on client response ${err} `, "d");
+          });
+      } catch (err) {}
+    }
+  }, [logindata]);
+
+  function createLogin(data) {
+    const { email, password } = data;
+    setlogindata({ email, password });
+  }
+
   // ______________________________________ API END ___________________________________
 
+  // ___________________________ default login by token ________________________________
+  let Local_token = JSON.parse(localStorage.getItem("Token"));
+  const [token, setToken] = useState({
+    token: Local_token || "",
+  });
+
+  useEffect(() => {
+    try {
+      fetch("http://localhost:3000/login", {
+        method: "POST",
+        header: {
+          "Content-Type": "application/json",
+          Authorisation: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          // showToast(`Token: ${data}`, "w");
+        })
+        .catch((err) => {
+          showToast(err, "w");
+        });
+    } catch (err) {
+      showToast(`error : ${err}`, "w");
+    }
+  }, []);
+
+  function Logout(){
+    try{
+      localStorage.clear()
+      setToken({token:""});
+      screenSwitch('HomeScreen');
+      showToast('logout successsfully',"s")
+    }catch(err){
+      showToast("Logout error","d");
+    }
+  }
   return (
     <>
       {state.HomeScreen === 1 && (
@@ -146,6 +227,7 @@ function App() {
           screenSwitch={screenSwitch}
           CompanyName={CompanyName}
           showToast={showToast}
+          createLogin={createLogin}
         />
       )}
       {state.SignupScreen === 1 && (
@@ -156,6 +238,7 @@ function App() {
           createNewSignup={createNewSignup}
         />
       )}
+    {!state.HomeScreen && !state.LoginScreen && !state.SignupScreen && <Dashboard Logout={Logout}/>}
     </>
   );
 }
