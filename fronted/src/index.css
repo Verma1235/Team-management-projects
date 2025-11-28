@@ -1,0 +1,44 @@
+/* Custom styles for the gradient background and the wave effect */
+body {
+  font-family: "Inter", sans-serif;
+  background: linear-gradient(135deg, #7e57c2 0%, #4a148c 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.mobile-card {
+  width: 100vw;
+  max-width: 400px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  background-color: white;
+}
+
+.header-wave {
+  height: 200px; /* Base height for the header area */
+  background: linear-gradient(to right, #6a5acd, #9370db);
+  position: relative;
+}
+
+.wave-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  color: white; /* Color of the wave itself */
+}
+/* Toast styles for smooth transitions */
+.toast {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
