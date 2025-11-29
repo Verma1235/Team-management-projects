@@ -7,11 +7,7 @@ dotenv.config();
 const app = express();
 
 // middleware
-app.use(cors({
-    origin: "http://localhost:5173",   // your React project URL
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 

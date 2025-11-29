@@ -28,11 +28,10 @@ function App() {
         setState({ [key]: 0 });
       }
     });
-    if(current=='0'){
-    }else{
-       setState({ [current]: 1 });
+    if (current == "0") {
+    } else {
+      setState({ [current]: 1 });
     }
-  
   }
 
   // Toast handller function
@@ -133,7 +132,9 @@ function App() {
     const { name, email, password } = data;
     setsignup({ name, email, password });
   }
-
+  // ___________________________ default login by token ________________________________
+  let Local_token = JSON.parse(localStorage.getItem("Token"));
+  const [token, setToken] = useState(Local_token);
   // login state +effect +api  manage
   const [logindata, setlogindata] = useState({ email: "", password: "" });
 
@@ -151,15 +152,15 @@ function App() {
         })
           .then((res) => res.json())
           .then((data) => {
-            console.log("Response:", data);
+            // console.log("Response:", data);
             if (data.status == 401) {
               showToast(`${data.message}`, "d");
             }
             if (data.status == 200) {
-              showToast("Login successfully proceesed !!", "s");
+              showToast("Login successfully !!", "s");
+              setToken(data.token);
               localStorage.setItem("Token", JSON.stringify(data.token));
               screenSwitch("0");
-
             }
           })
           .catch((err) => {
@@ -176,42 +177,95 @@ function App() {
 
   // ______________________________________ API END ___________________________________
 
-  // ___________________________ default login by token ________________________________
-  let Local_token = JSON.parse(localStorage.getItem("Token"));
-  const [token, setToken] = useState({
-    token: Local_token || "",
-  });
+
+  // ____________________ USER INFO ____________________________________________
+  const [userdata,setuserdata]=useState({name:"guest",email:"guest@gmail.com",users:0,usersdataset:[]});
 
   useEffect(() => {
-    try {
-      fetch("http://localhost:3000/login", {
-        method: "POST",
-        header: {
-          "Content-Type": "application/json",
-          Authorisation: `Bearer ${token}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          // showToast(`Token: ${data}`, "w");
-        })
-        .catch((err) => {
-          showToast(err, "w");
-        });
-    } catch (err) {
-      showToast(`error : ${err}`, "w");
-    }
-  }, []);
+  try {
+    fetch("http://localhost:3000/data", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        // console.log(data);
+        
+        try{
+          fetch("http://localhost:3000/admin",{
+            method:"POST",
+            headers:{
+              "Content-Type":"application/json"
+            },
+            body:JSON.stringify({email:data.email}),
+          }).then((res)=>res.json())
+          .then((data2)=>{
+            console.log(data2);
+          localStorage("ROLE",JSON.stringify({email:data.email,role:data2?.role}));
+            
+          })
+        }catch(err){
+          console.log(err);
+          localStorage("ROLE",JSON.stringify({email:data.email,role:"USER"}));
 
-  function Logout(){
-    try{
-      localStorage.clear()
-      setToken({token:""});
-      screenSwitch('HomeScreen');
-      showToast('logout successsfully',"s")
-    }catch(err){
-      showToast("Logout error","d");
+        }
+
+        setuserdata({name:data.name,email:data.email,users:data.totalUsers,usersdataset:data.usersdata});
+        
+      })
+      .catch((err) => {
+        showToast(err, "w");
+      });
+  } catch (err) {
+    showToast(`error : ${err}`, "w");
+  }
+}, [token]);
+
+// useEffect(() => {
+//   console.log("token: ",JSON.stringify(token))
+//   try {
+//     fetch("http://localhost:3000/data", {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${token}`,
+//       },
+//     })
+//       .then((res) => res.json())
+//       .then((data) => {
+//         setuserdata({name:data.name,email:data.email,users:data.totalUsers,usersdataset:data.usersdata});
+//       })
+//       .catch((err) => {
+//         showToast(err, "w");
+//       });
+//   } catch (err) {
+//     showToast(`error : ${err}`, "w");
+//   }
+// }, []);
+
+
+  // logout
+  const [logout, setlogout] = useState(0);
+  useEffect(() => {
+ 
+    if (logout) {
+        //  alert("logout trigger");
+      try {
+        localStorage.removeItem("Token");
+        setToken("");
+        screenSwitch("HomeScreen");
+        showToast("logout successsfully", "s");
+      } catch (err) {
+        showToast("Logout error", "d");
+      }
     }
+  }, [logout]);
+
+  function Logout() {
+    setlogout(1);
   }
   return (
     <>
@@ -238,7 +292,9 @@ function App() {
           createNewSignup={createNewSignup}
         />
       )}
-    {!state.HomeScreen && !state.LoginScreen && !state.SignupScreen && <Dashboard Logout={Logout}/>}
+      {!state.HomeScreen && !state.LoginScreen && !state.SignupScreen && (
+        <Dashboard Logout={Logout} userdata={userdata} />
+      )}
     </>
   );
 }

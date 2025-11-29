@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { UserModel } from "../../database/web/User.model.js";
+import {TMemberModel} from "../../database/web/TeamMember.model.js"
 
 dotenv.config();
 
@@ -93,5 +94,26 @@ let userLogin = async (req, res) => {
 
 }
 
+let dataSet = async (req, res) => {
+const activeCount = await UserModel.countDocuments();
+const allusers=await UserModel.find({});
+// console.log(`Active entries: ${activeCount}`);
 
-export { HomeScreen, BadReqHandeller, userSignUp, userLogin };
+    const {userId,userName,userEmail}=req.body;
+
+    
+  let  obj = {
+            name:  userName,
+            email:userEmail,
+            _id: userId,
+            totalUsers:activeCount,
+            usersdata:allusers
+        }
+        // console.log(req.body);
+    
+    res.send(obj);
+
+}
+
+
+export { HomeScreen, BadReqHandeller, userSignUp, userLogin, dataSet };
